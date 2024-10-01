@@ -41,10 +41,10 @@ jobs:
         pip uninstall -y "jprofiler" jupyter_server
         rm -rf "jprofiler"
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: my_server_extension-sdist
-        path: my_server_extension.tar.gz
+    # - uses: actions/upload-artifact@v2
+    #   with:
+    #     name: my_server_extension-sdist
+    #     path: my_server_extension.tar.gz
 
   check_links:
     runs-on: ubuntu-latest
