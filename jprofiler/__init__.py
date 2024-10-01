@@ -1,5 +1,6 @@
 """resource profiler for jupyter notebook"""
 from .extension import Extension
+from .handlers import ProfileHandler
 __version__ = "0.1.0"
 
 

@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -43,7 +43,7 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: my_server_extension-sdist
+        name: my_server_extension-sdist-${{ matrix.os }}-py${{ matrix.python-version }}
         path: my_server_extension.tar.gz
 
   check_links:
@@ -84,6 +84,10 @@ jobs:
   test_sdist:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [ '3.8', '3.9', '3.10', "3.11" ]
 
     steps:
     - name: Checkout
@@ -95,7 +99,7 @@ jobs:
         architecture: 'x64'
     - uses: actions/download-artifact@v2
       with:
-        name: my_server_extension-sdist
+        name: my_server_extension-sdist-${{ matrix.os }}-py${{ matrix.python-version }}
     - name: Install and Test
       run: |
         pip install my_server_extension.tar.gz

@@ -1,14 +1,15 @@
 from traitlets import Unicode
 
 from jupyter_server.extension.application import ExtensionApp
-from .handlers import PingHandler
+from .handlers import PingHandler, ProfileHandler
 
 
 class Extension(ExtensionApp):
 
     name = "jprofiler"
     handlers = [
-        ("jprofiler/ping", PingHandler)
+        ("jprofiler/ping", PingHandler),
+        ("jprofiler/profile", ProfileHandler)
     ]
 
     # Example of a configurable trait. This is meant to be replaced
