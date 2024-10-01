@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Base Setup
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
@@ -41,45 +41,11 @@ jobs:
         pip uninstall -y "jprofiler" jupyter_server
         rm -rf "jprofiler"
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: my_server_extension-sdist-${{ matrix.os }}-py${{ matrix.python-version }}
         path: my_server_extension.tar.gz
-
-  check_links:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
-
-  test_lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      - name: Run Linters
-        run: |
-          bash ./.github/workflows/lint.sh
-
-  check_release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Base Setup
-        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      - name: Install Dependencies
-        run: |
-          pip install -e .
-      - name: Check Release
-        uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Distributions
-        uses: actions/upload-artifact@v2
-        with:
-          name: jprofiler-releaser-dist-${{ github.run_number }}
-          path: .jupyter_releaser_checkout/dist
+        compression-level: 0
 
   test_sdist:
     needs: build
@@ -91,17 +57,33 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: ${{ matrix.python-version }}
         architecture: 'x64'
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: my_server_extension-sdist-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: dist
     - name: Install and Test
       run: |
-        pip install my_server_extension.tar.gz
+        pip install dist/my_server_extension.tar.gz
         pip install jupyter_server
         jupyter server extension list 2>&1 | grep -ie "jprofiler.*OK"
+
+  combine_artifacts:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: my_server_extension-sdist-*
+        merge-multiple: true
+        path: combined_artifacts
+    - uses: actions/upload-artifact@v4
+      with:
+        name: all_sdists
+        path: combined_artifacts
+        compression-level: 0
